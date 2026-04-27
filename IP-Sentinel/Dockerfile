@@ -6,20 +6,25 @@ RUN apk add --no-cache curl jq sqlite bash procps openssl
 # 创建工作目录
 WORKDIR /opt/ip_sentinel_master
 
-# 定义环境变量默认值
+# 去掉硬编码的版本号，保留核心环境变量
 ENV TG_TOKEN=""
 ENV MASTER_DIR="/opt/ip_sentinel_master"
 ENV DB_FILE="/opt/ip_sentinel_master/sentinel.db"
-ENV MASTER_VERSION="4.0.0"
 ENV IS_OFFICIAL_GATEWAY="false"
 ENV ENABLE_MASTER_OTA="false"
 
-# 编写启动包裹脚本 (生成配置 -> 建数据库表 -> 拉取代码 -> 运行)
+# 编写启动包裹脚本 (动态获取版本 -> 生成配置 -> 建表 -> 拉代码 -> 运行)
 RUN cat << 'EOF' > /start.sh
 #!/bin/bash
+
+echo "🔍 正在从云端动态获取最新版本号..."
+LATEST_VERSION=$(curl -sL "https://raw.githubusercontent.com/hotyue/IP-Sentinel/main/version.txt" | grep "^MASTER_VERSION=" | cut -d'=' -f2 | tr -d '[:space:]')
+LATEST_VERSION=${LATEST_VERSION:-"4.0.0"}
+echo "✅ 当前最新版本号为: v${LATEST_VERSION}"
+
 echo "⏳ 正在生成 master.conf 配置文件..."
 cat > /opt/ip_sentinel_master/master.conf << CONF
-MASTER_VERSION="${MASTER_VERSION}"
+MASTER_VERSION="${LATEST_VERSION}"
 TG_TOKEN="${TG_TOKEN}"
 DB_FILE="${DB_FILE}"
 MASTER_DIR="${MASTER_DIR}"
