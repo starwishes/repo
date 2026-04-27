@@ -63,6 +63,21 @@ chmod +x /opt/ip_sentinel_master/tg_master.sh
 
 echo "🚀 启动 IP-Sentinel 控制中枢..."
 exec /bin/bash /opt/ip_sentinel_master/tg_master.sh
+
+# 权限双重保险：确保中枢有权写入挂载目录
+echo "🛡️ 正在确保数据库目录权限..."
+chmod -R 777 /opt/ip_sentinel_master
+
+# 环境清理：删除可能导致启动失败的旧日志锁文件
+rm -f /opt/ip_sentinel_master/*.log.lock
+
+echo "🚀 启动 IP-Sentinel 控制中枢..."
+
+# 智能启动
+# 使用 exec 确保日志直接输出到控制台（Dokploy 面板）
+# 同时加上 -u 参数可以强制刷新缓冲区，防止日志显示延迟
+exec /bin/bash /opt/ip_sentinel_master/tg_master.sh
+
 EOF
 
 # 5. 赋予启动脚本执行权限
