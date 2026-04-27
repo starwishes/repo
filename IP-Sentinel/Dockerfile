@@ -15,4 +15,5 @@ ENV DB_FILE="/opt/ip_sentinel_master/sentinel.db"
 # 这样每次容器启动，都会先拉取最新脚本，然后再运行
 CMD curl -sL https://raw.githubusercontent.com/hotyue/IP-Sentinel/main/master/tg_master.sh -o tg_master.sh && \
     chmod +x tg_master.sh && \
-    /bin/bash tg_master.sh
+    /bin/bash tg_master.sh & \
+    tail -f /dev/null
